@@ -3,7 +3,9 @@ import numpy as np
 import math
 import time
 import sys
-sys.path.append('/home/marco/ros2_devel/src/AdvancedNavigation_HybridNavSystem/advancednavigation_gnss')
+import os
+ros2_home = os.getenv('ROS2_HOME', "/home/roxy/ros2_ws")
+sys.path.append(os.path.join(ros2_home, "src/AdvancedNavigation_HybridNavSystem/advancednavigation_gnss"))
 from geo_to_cart_cxx.geo_to_cart_cxx import geo_to_cart
 from advancednavigation_spatial import advancednavigation_spatial 
 
