@@ -4,10 +4,9 @@ import math
 import time
 import sys
 import os
-ros2_home = os.getenv('ROS2_HOME', "/home/roxy/ros2_ws")
-sys.path.append(os.path.join(ros2_home, "src/AdvancedNavigation_HybridNavSystem/advancednavigation_gnss"))
-from geo_to_cart_cxx.geo_to_cart_cxx import geo_to_cart
-from advancednavigation_spatial import advancednavigation_spatial 
+
+from resources.geo_to_cart_cxx import geo_to_cart
+from resources import advancednavigation_spatial 
 
 class GeoTranslator:
     def __init__(self, heading_toward_north):
@@ -49,10 +48,7 @@ class GeoTranslator:
         return b
 
     def acquire(self):
-        print("A")
         self.hal_gps.get_gnss_info(self.res)
-        print("B")
-        print(self.res)
         self.geotedic_pose[:, 0] = self.res[0:3]
         self.geotedic_confidences[:, 0] = self.res[3:6]
 

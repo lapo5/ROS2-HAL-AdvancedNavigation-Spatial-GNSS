@@ -1,6 +1,7 @@
+import os
+from glob import glob
 from setuptools import setup
 
-from glob import glob
 
 package_name = 'advancednavigation_gnss'
 
@@ -12,6 +13,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('lib', package_name, 'resources'), glob(package_name+'/advancednavigation_spatial/*.so')),
+        (os.path.join('lib', package_name, 'resources'), glob(package_name+'/geo_to_cart_cxx/*.so')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

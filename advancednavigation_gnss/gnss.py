@@ -244,8 +244,6 @@ class GNSSNode(Node):
 		self.geotrans.acquire()
 		self.ntrip_thread.lat = self.geotrans.res[0]
 		self.ntrip_thread.lon = self.geotrans.res[1]
-		print(self.geotrans.tf)
-		#self.gns.cartesian_confidences
 
 		msg = NavSatFix()
 		msg.header = Header()

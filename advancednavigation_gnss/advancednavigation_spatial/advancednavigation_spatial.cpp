@@ -70,8 +70,6 @@ class PyHALAdvancedNavigationSpatial{
 		gnss_status_ptr[4] = system_state_packet.standard_deviation[1];
 		gnss_status_ptr[5] = system_state_packet.standard_deviation[2];
 
-		std::cout << system_state_packet.filter_status.b.gnss_fix_type << std::endl;
-
 		an_packet_free(&in_packet);
 	}
 
