@@ -3,9 +3,9 @@
 <package format="3">
   <name>advancednavigation_gnss</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>HAL for GNSS AdvancedNavigation Spatial</description>
   <maintainer email="marco.lapolla5@gmail.com">Marco Lapolla</maintainer>
-  <license>TODO: License declaration</license>
+  <license>BSD</license>
 
   <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
