@@ -5,8 +5,7 @@ INCLUDEFLAGS      = `python3 -m pybind11 --includes`
 OPTIMIZATIONFLAGS = -O3 -mtune=native -march=native -DNDEBUG
 DEBUGFLAGS        = -g -ggdb3 -fno-omit-frame-pointer -O0 -mtune=native -march=native
 PARALLELISMFLAGS  = -fopenmp -ltbb
-LDFLAGS           = -L $(shell pwd)/../../dependencies/install/lib -Wl,-rpath=$(shell pwd)/../../dependencies/install/lib \
-					-lboost_system -lboost_filesystem -lblas -llapack -DHAVE_CBLAS=1 -lfftw3 -ltbb -lGeographic
+LDFLAGS           = -lboost_system -lboost_filesystem -lblas -llapack -DHAVE_CBLAS=1 -lfftw3 -ltbb -lGeographic
 
 all:
 	g++ ${CCFLAGS} ${INCLUDEFLAGS} ${OPTIMIZATIONFLAGS} ${PARALLELISMFLAGS} ${LIBNAME}.cpp -o ${LIBNAME}`python3-config --extension-suffix` ${LDFLAGS}
