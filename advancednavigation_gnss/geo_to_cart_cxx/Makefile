@@ -1,9 +1,7 @@
 LIBNAME           = geo_to_cart_cxx
 
 CCFLAGS           = -Wall -Wextra -Wno-narrowing -std=c++17 -shared -fPIC
-INCLUDEFLAGS      = -isystem../../dependencies/install/include \
-					-isystem../../dependencies/install/include/tbb \
-					`python3 -m pybind11 --includes`
+INCLUDEFLAGS      = `python3 -m pybind11 --includes`
 OPTIMIZATIONFLAGS = -O3 -mtune=native -march=native -DNDEBUG
 DEBUGFLAGS        = -g -ggdb3 -fno-omit-frame-pointer -O0 -mtune=native -march=native
 PARALLELISMFLAGS  = -fopenmp -ltbb
