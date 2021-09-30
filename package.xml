@@ -1,24 +1,18 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>advancednavigation_gnss</name>
+  <name>hal_an_spatial</name>
   <version>0.0.0</version>
   <description>HAL for GNSS AdvancedNavigation Spatial</description>
-  <maintainer email="marco.lapolla5@gmail.com">Marco Lapolla</maintainer>
+  <maintainer email="roncapat@gmail.com">Patrick Roncagliolo</maintainer>
   <license>BSD</license>
 
-  <depend>rclpy</depend>
+  <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>std_srvs</depend>
-
-  <test_depend>ament_copyright</test_depend>
-  <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_pep257</test_depend>
-  <test_depend>python3-pytest</test_depend>
-  
+  <depend>serial</depend>
 
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
