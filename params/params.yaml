@@ -2,6 +2,9 @@ hal_an_spatial:
   ros__parameters:
     port: /dev/ttyUSB0
     baud: 115200
+    gnss_rate: 1
+    imu_rate: 50
+    
     publishers:
       imu_topic: /imu
       mag_topic: /mag

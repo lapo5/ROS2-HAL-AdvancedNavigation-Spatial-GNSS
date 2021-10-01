@@ -27,6 +27,8 @@ class HALSpatialNode : public rclcpp::Node {
   HALSpatialNode() : Node("hal_an_spatial") {
     port = declare_parameter("port", "/dev/ttyUSB0");
     baud = declare_parameter("baud", 115200);
+	gnss_rate = declare_parameter("gnss_rate", 1);
+	imu_rate = declare_parameter("imu_rate", 50);
 	imu_topic = declare_parameter<std::string>("publishers.imu_topic", "/imu");
 	mag_topic = declare_parameter<std::string>("publishers.mag_topic", "/mag");
 	nav_topic = declare_parameter<std::string>("publishers.nav_topic", "/gnss");
@@ -43,6 +45,39 @@ class HALSpatialNode : public rclcpp::Node {
       RCLCPP_ERROR(get_logger(), "Unable to open port ", port);
     }
 
+	an_packet_t *out_packet;
+
+	packet_timer_period_packet_t timer_packet = {
+		.permanent = 0,
+		.utc_synchronisation = 0,
+		.packet_timer_period = 1000 //1000 us (1000 Hz)
+	};
+
+	out_packet = encode_packet_timer_period_packet(&timer_packet);
+	if(out_packet != nullptr){
+		an_packet_encode(out_packet);
+		ser->write(an_packet_pointer(out_packet), an_packet_size(out_packet));
+		an_packet_free(&out_packet);
+	}
+
+	// Packet Rate = 1000000/(Packet Period x Packet Timer Period) Hz
+	// Packet Period = 1000000/(Packet Timer Period x Packet Rate)
+	packet_periods_packet_t periods_packet = {
+		.permanent = 0,
+		.clear_existing_packets = 1,
+		.packet_periods = {
+			{ .packet_id = 20,	.period = 1000000/(1000 * gnss_rate /*Hz*/) }, 
+			{ .packet_id = 28,	.period = 1000000/(1000 * imu_rate  /*Hz*/) }
+		}
+	};
+
+	out_packet = encode_packet_periods_packet(&periods_packet);
+	if(out_packet != nullptr){
+		an_packet_encode(out_packet);
+		ser->write(an_packet_pointer(out_packet), an_packet_size(out_packet));
+		an_packet_free(&out_packet);
+	}
+
     imu_publisher_ = create_publisher<sensor_msgs::msg::Imu>(imu_topic, 1);
     mag_publisher_ = create_publisher<sensor_msgs::msg::MagneticField>(mag_topic, 1);
     nav_publisher_ = create_publisher<sensor_msgs::msg::NavSatFix>(nav_topic, 1);
@@ -51,13 +86,15 @@ class HALSpatialNode : public rclcpp::Node {
   }
 
   ~HALSpatialNode(){
+	  stop = true;
+	  worker_thread.join();
 	  ser->close();
   }
   
  private:
 	std::thread worker_thread;
  	std::string port;
-    int32_t baud;
+    int32_t baud, imu_rate, gnss_rate;
 	std::shared_ptr<serial::Serial> ser;
 	std::string imu_topic, mag_topic, nav_topic;
 	an_decoder_t an_decoder;
@@ -84,7 +121,7 @@ class HALSpatialNode : public rclcpp::Node {
 		bool packet_found = false;
 		an_decoder_initialise(&an_decoder);
 		while (not packet_found){
-			if (bytes_received = ser->read(an_decoder_pointer(&an_decoder), 1)){
+			if ((bytes_received = ser->read(an_decoder_pointer(&an_decoder), 1))){
 				an_decoder_increment(&an_decoder, bytes_received);
 				while ((in_packet = an_packet_decode(&an_decoder)) != nullptr){
 					if (in_packet->id == packet_id_raw_sensors){
