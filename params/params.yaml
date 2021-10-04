@@ -9,3 +9,4 @@ hal_an_spatial:
       imu_topic: /imu
       mag_topic: /mag
       nav_topic: /gnss
+      rtcm_topic: /rtcm

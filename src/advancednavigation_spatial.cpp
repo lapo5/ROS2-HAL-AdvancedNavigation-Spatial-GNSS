@@ -16,6 +16,7 @@
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/magnetic_field.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
+#include "std_msgs/msg/u_int8_multi_array.hpp"
 
 #include <serial/serial.h>
 
@@ -32,7 +33,7 @@ class HALSpatialNode : public rclcpp::Node {
 	imu_topic = declare_parameter<std::string>("publishers.imu_topic", "/imu");
 	mag_topic = declare_parameter<std::string>("publishers.mag_topic", "/mag");
 	nav_topic = declare_parameter<std::string>("publishers.nav_topic", "/gnss");
-
+	rtcm_topic = declare_parameter<std::string>("publishers.rtcm_topic", "/rtcm");
 
 	try {
      ser = std::make_shared<serial::Serial>();
@@ -81,8 +82,9 @@ class HALSpatialNode : public rclcpp::Node {
     imu_publisher_ = create_publisher<sensor_msgs::msg::Imu>(imu_topic, 1);
     mag_publisher_ = create_publisher<sensor_msgs::msg::MagneticField>(mag_topic, 1);
     nav_publisher_ = create_publisher<sensor_msgs::msg::NavSatFix>(nav_topic, 1);
+	rtcm_subscription_ = create_subscription<std_msgs::msg::UInt8MultiArray>(rtcm_topic, 10, std::bind(&HALSpatialNode::rtcm_callback, this, _1));
 
-	worker_thread = std::thread([this]{feedback_loop();});
+	worker_thread = std::thread([this]{this->feedback_loop();});
   }
 
   ~HALSpatialNode(){
@@ -96,16 +98,28 @@ class HALSpatialNode : public rclcpp::Node {
  	std::string port;
     int32_t baud, imu_rate, gnss_rate;
 	std::shared_ptr<serial::Serial> ser;
-	std::string imu_topic, mag_topic, nav_topic;
+	std::string imu_topic, mag_topic, nav_topic, rtcm_topic;
 	an_decoder_t an_decoder;
-	char rtcm_buf[255];
-	size_t rtcm_size;
 	int bytes_received;
 	bool stop = false;
 
   	rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_publisher_;
   	rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr mag_publisher_;
 	rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr nav_publisher_;
+	rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr rtcm_subscription_;
+
+	void rtcm_callback(const std_msgs::msg::UInt8MultiArray::SharedPtr msg){
+		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+		an_packet_t *out_packet = an_packet_allocate(msg->layout.dim[0].size , packet_id_rtcm_corrections);
+		if(out_packet != nullptr){
+			memcpy(out_packet->data, msg->data.data(), msg->layout.dim[0].size );
+			an_packet_encode(out_packet);
+			ser->write(an_packet_pointer(out_packet), an_packet_size(out_packet));
+			an_packet_free(&out_packet);
+		}
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		RCLCPP_INFO(get_logger(), "RTCM - Time difference = %d [ms]", std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count());
+	}
 
   void feedback_loop(){
 	an_packet_t *in_packet;
@@ -169,6 +183,7 @@ class HALSpatialNode : public rclcpp::Node {
 				default:
 					nav_msg.status.status = nav_msg.status.STATUS_NO_FIX;
 			}
+			RCLCPP_INFO(get_logger(), "Fix type: %d", int(system_packet.filter_status.b.gnss_fix_type));
 			nav_msg.status.service = nav_msg.status.SERVICE_GPS | nav_msg.status.SERVICE_GLONASS;
 			nav_msg.longitude = system_packet.longitude;
 			nav_msg.latitude = system_packet.latitude;
@@ -183,7 +198,7 @@ class HALSpatialNode : public rclcpp::Node {
 
 		an_packet_free(&in_packet);
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		RCLCPP_INFO(get_logger(), "Time difference = %d [ms]", std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count());
+		//RCLCPP_INFO(get_logger(), "Time difference = %d [ms]", std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count());
 	}
   }
 };
