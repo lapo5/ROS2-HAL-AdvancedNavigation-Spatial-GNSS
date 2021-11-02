@@ -26,10 +26,10 @@ class HALSpatialNode : public rclcpp::Node {
  public:
 
   HALSpatialNode() : Node("hal_an_spatial") {
-    port = declare_parameter("port", "/dev/ttyUSB0");
-    baud = declare_parameter("baud", 115200);
-	gnss_rate = declare_parameter("gnss_rate", 1);
-	imu_rate = declare_parameter("imu_rate", 50);
+    port = declare_parameter<std::string>("port", "/dev/ttyUSB0");
+    baud = (uint32_t) declare_parameter<int>("baud", 115200);
+	gnss_rate = (uint32_t) declare_parameter<int>("gnss_rate", 1);
+	imu_rate = (uint32_t) declare_parameter<int>("imu_rate", 50);
 	imu_topic = declare_parameter<std::string>("publishers.imu_topic", "/imu");
 	mag_topic = declare_parameter<std::string>("publishers.mag_topic", "/mag");
 	nav_topic = declare_parameter<std::string>("publishers.nav_topic", "/gnss");
@@ -96,7 +96,7 @@ class HALSpatialNode : public rclcpp::Node {
  private:
 	std::thread worker_thread;
  	std::string port;
-    int32_t baud, imu_rate, gnss_rate;
+    uint32_t baud, imu_rate, gnss_rate;
 	std::shared_ptr<serial::Serial> ser;
 	std::string imu_topic, mag_topic, nav_topic, rtcm_topic;
 	an_decoder_t an_decoder;
@@ -198,7 +198,7 @@ class HALSpatialNode : public rclcpp::Node {
 
 		an_packet_free(&in_packet);
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		//RCLCPP_INFO(get_logger(), "Time difference = %d [ms]", std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count());
+		RCLCPP_INFO(get_logger(), "Time difference = %d [ms]", std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count());
 	}
   }
 };
