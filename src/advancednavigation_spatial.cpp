@@ -34,7 +34,7 @@ class HALSpatialNode : public rclcpp::Node {
 	mag_topic = declare_parameter<std::string>("publishers.mag_topic", "/mag");
 	nav_topic = declare_parameter<std::string>("publishers.nav_topic", "/gnss");
 	rtcm_topic = declare_parameter<std::string>("publishers.rtcm_topic", "/rtcm");
-
+	reference_frame = declare_parameter<std::string>("frame_id", "base_link");
 	try {
      ser = std::make_shared<serial::Serial>();
      ser->setPort(port);
@@ -96,6 +96,7 @@ class HALSpatialNode : public rclcpp::Node {
  private:
 	std::thread worker_thread;
  	std::string port;
+	std::string reference_frame;
     uint32_t baud, imu_rate, gnss_rate;
 	std::shared_ptr<serial::Serial> ser;
 	std::string imu_topic, mag_topic, nav_topic, rtcm_topic;
@@ -185,6 +186,7 @@ class HALSpatialNode : public rclcpp::Node {
 			}
 			RCLCPP_INFO(get_logger(), "Fix type: %d", int(system_packet.filter_status.b.gnss_fix_type));
 			nav_msg.status.service = nav_msg.status.SERVICE_GPS | nav_msg.status.SERVICE_GLONASS;
+			nav_msg.header.frame_id = reference_frame;
 			nav_msg.longitude = system_packet.longitude;
 			nav_msg.latitude = system_packet.latitude;
 			nav_msg.altitude = system_packet.height;

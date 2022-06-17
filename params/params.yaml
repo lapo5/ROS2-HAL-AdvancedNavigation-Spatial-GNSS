@@ -1,12 +1,12 @@
 hal_an_spatial:
   ros__parameters:
-    port: /dev/ttyUSB1
+    port: /dev/ttyUSB0
     baud: 115200
-    gnss_rate: 1
+    gnss_rate: 10
     imu_rate: 80
-    
+    frame_id: odom
     publishers:
-      imu_topic: /imu/data
-      mag_topic: /imu/magnetic
+      imu_topic: /imu2/data
+      mag_topic: /imu2/magnetic
       nav_topic: /gnss
       rtcm_topic: /rtcm
