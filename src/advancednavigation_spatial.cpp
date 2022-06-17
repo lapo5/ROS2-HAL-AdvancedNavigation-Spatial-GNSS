@@ -155,6 +155,7 @@ class HALSpatialNode : public rclcpp::Node {
 		}
 
 		if (type == packet_id_raw_sensors){
+			imu_msg.header.frame_id = reference_frame;
 			imu_msg.angular_velocity.x = sensor_packet.gyroscopes[0];
 			imu_msg.angular_velocity.y = sensor_packet.gyroscopes[1];
 			imu_msg.angular_velocity.z = sensor_packet.gyroscopes[2];
@@ -162,6 +163,7 @@ class HALSpatialNode : public rclcpp::Node {
 			imu_msg.linear_acceleration.y = sensor_packet.accelerometers[1];
 			imu_msg.linear_acceleration.z = sensor_packet.accelerometers[2];
 			imu_publisher_->publish(imu_msg);
+			mag_msg.header.frame_id = reference_frame;
 			mag_msg.magnetic_field.x = sensor_packet.magnetometers[0];
 			mag_msg.magnetic_field.y = sensor_packet.magnetometers[1];
 			mag_msg.magnetic_field.z = sensor_packet.magnetometers[2];
